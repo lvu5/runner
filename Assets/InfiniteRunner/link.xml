@@ -1,0 +1,18 @@
+<linker>
+  <!--
+    The prototype creates its geometry at runtime with GameObject.CreatePrimitive.
+    Web builds cannot discover those native component dependencies while stripping,
+    so preserve the components used by Cube, Sphere, and Cylinder primitives.
+  -->
+  <assembly fullname="UnityEngine.CoreModule">
+    <type fullname="UnityEngine.MeshFilter" preserve="all" />
+    <type fullname="UnityEngine.MeshRenderer" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.PhysicsModule">
+    <type fullname="UnityEngine.BoxCollider" preserve="all" />
+    <type fullname="UnityEngine.CapsuleCollider" preserve="all" />
+    <type fullname="UnityEngine.SphereCollider" preserve="all" />
+    <type fullname="UnityEngine.CharacterController" preserve="all" />
+    <type fullname="UnityEngine.Rigidbody" preserve="all" />
+  </assembly>
+</linker>

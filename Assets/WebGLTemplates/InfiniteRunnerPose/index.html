@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{{{ PRODUCT_NAME }}} — A Run Through Saigon</title>
+    <link rel="stylesheet" href="TemplateData/style.css">
+#if SHOW_DIAGNOSTICS
+    <link rel="stylesheet" href="<<<TemplateData/diagnostics.css>>>">
+    <script src="<<<TemplateData/diagnostics.js>>>"></script>
+#endif
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <section id="control-mode-dialog" class="control-mode-dialog" role="dialog" aria-modal="true" aria-labelledby="control-mode-title">
+      <div class="control-mode-card">
+        <div class="city-stripes" aria-hidden="true">★ ★ ★ ★</div>
+        <span class="eyebrow">A HOT AFTERNOON IN SAI GON</span>
+        <h2 id="control-mode-title">Saigon is calling.</h2>
+        <p class="control-mode-intro">Weave through District 1 past scooters, street food and tangled power lines. Choose your controls and find your stride.</p>
+
+        <div class="control-mode-options">
+          <button id="choose-keyboard" class="control-mode-option keyboard-option" type="button">
+            <span class="control-mode-icon" aria-hidden="true">W</span>
+            <span><strong>Play with keyboard</strong><small>W, A, S, D and Space</small></span>
+          </button>
+          <button id="choose-camera" class="control-mode-option camera-option" type="button">
+            <span class="control-mode-icon camera-mode-icon" aria-hidden="true">●</span>
+            <span><strong>Play with camera</strong><small>Use your body with MediaPipe</small></span>
+          </button>
+        </div>
+
+        <p id="control-mode-help" class="control-mode-help" role="status" aria-live="polite">
+          Camera processing stays in this browser tab.
+        </p>
+      </div>
+    </section>
+
+    <div id="app-shell">
+      <main class="game-column">
+        <header class="page-header">
+          <div>
+            <span class="eyebrow">QUAN 1 · SAI GON · ENDLESS AFTERNOON</span>
+            <h1>{{{ PRODUCT_NAME }}}</h1>
+          </div>
+          <div class="header-actions">
+            <button id="change-control-mode" class="mode-switch-button" type="button">Choose controls</button>
+            <span class="privacy-pill"><span class="privacy-dot"></span>Camera stays on this device</span>
+          </div>
+        </header>
+
+        <section id="unity-container">
+          <canvas id="unity-canvas" width={{{ WIDTH }}} height={{{ HEIGHT }}} tabindex="0"></canvas>
+          <div id="unity-loading">
+            <div class="runner-mark" aria-hidden="true">★</div>
+            <div class="loading-copy">Warming up on Dong Khoi…</div>
+            <div class="progress-track"><div id="unity-progress"></div></div>
+          </div>
+          <div id="unity-warning"></div>
+        </section>
+
+        <div class="weather-note"><span>QUAN 1 / TP. HO CHI MINH</span><strong>☀ 34°C. Humid. Busy streets.</strong></div>
+        <p class="obstacle-guide"><span><strong>Dodge</strong> taxis, trucks &amp; buses</span><span><strong>Jump</strong> sidewalk hotpot tables</span><span><strong>Crouch</strong> under Tet banners</span><span><strong>Ride the Metro</strong> avoid closed lanes</span></p>
+        <p class="keyboard-hint">
+          Keyboard fallback: hold <kbd>W</kbd> to run · <kbd>A</kbd>/<kbd>D</kbd> move ·
+          <kbd>Space</kbd> jump · hold <kbd>S</kbd> to crouch
+        </p>
+      </main>
+
+      <aside class="pose-column">
+        <div class="pose-heading">
+          <div>
+            <span class="eyebrow">MOVE YOUR WAY</span>
+            <h2>Your controller</h2>
+          </div>
+          <span id="tracking-light" class="tracking-light"></span>
+        </div>
+
+        <div id="pose-stage" class="pose-stage">
+          <video id="pose-video" muted playsinline></video>
+          <canvas id="pose-overlay"></canvas>
+          <div class="lane-guide" aria-hidden="true">
+            <div class="lane-zone lane-zone-left"><span>LEFT</span></div>
+            <div class="lane-zone lane-zone-center"><span>CENTER<small>START HERE</small></span></div>
+            <div class="lane-zone lane-zone-right"><span>RIGHT</span></div>
+          </div>
+          <div class="frame-guide"><span>Use the center of your body to cross a line</span></div>
+          <div id="pose-perf" class="pose-perf" aria-live="off" title="Pose tracking speed: delegate · model · samples per second · inference time"></div>
+          <div id="camera-placeholder" class="camera-placeholder">
+            <div class="camera-icon">●</div>
+            <strong>Camera is off</strong>
+            <span>Enable it when you are ready to play.</span>
+          </div>
+        </div>
+
+        <div id="tracking-status" class="status-card" role="status" aria-live="polite">
+          Loading the Unity game…
+        </div>
+
+        <div class="button-row">
+          <button id="start-camera" class="primary-button" type="button" disabled>Use camera</button>
+          <button id="recalibrate" class="secondary-button" type="button" disabled>Recalibrate</button>
+          <button id="stop-camera" class="icon-button" type="button" disabled aria-label="Stop camera" title="Stop camera">■</button>
+        </div>
+
+        <details class="sensitivity-panel" open>
+          <summary><span>Gesture sensitivity</span><small>Adjust</small></summary>
+          <p id="sensitivity-help">Higher sensitivity reacts to smaller body movements.</p>
+
+          <label class="sensitivity-control" for="run-sensitivity">
+            <span><strong>Run</strong><output id="run-sensitivity-value" for="run-sensitivity">Responsive · 65%</output></span>
+            <input id="run-sensitivity" type="range" min="0" max="100" step="1" value="65" aria-describedby="sensitivity-help">
+          </label>
+
+          <label class="sensitivity-control" for="jump-sensitivity">
+            <span><strong>Jump</strong><output id="jump-sensitivity-value" for="jump-sensitivity">Responsive · 65%</output></span>
+            <input id="jump-sensitivity" type="range" min="0" max="100" step="1" value="65" aria-describedby="sensitivity-help">
+          </label>
+
+          <label class="sensitivity-control" for="crouch-sensitivity">
+            <span><strong>Crouch</strong><output id="crouch-sensitivity-value" for="crouch-sensitivity">Responsive · 65%</output></span>
+            <input id="crouch-sensitivity" type="range" min="0" max="100" step="1" value="65" aria-describedby="sensitivity-help">
+          </label>
+        </details>
+
+        <div class="gesture-grid">
+          <div><span class="gesture-icon">🏃</span><strong>Run</strong><small>Run in place or pump arms</small></div>
+          <div><span class="gesture-icon">↔</span><strong>Move</strong><small>Cross a zone line</small></div>
+          <div data-gesture="Jump"><span class="gesture-icon">↑</span><strong>Jump</strong><small>Hop up, then land</small></div>
+          <div data-gesture="Crouch"><span class="gesture-icon">↓</span><strong>Crouch</strong><small>Squat and hold</small></div>
+        </div>
+
+        <p class="setup-tip"><strong>First time:</strong> stand in the CENTER section, about 2 m from the camera, and keep still for a second while the game calibrates. Shoulders and hips must be in view; feet are optional but make jumps more precise.</p>
+      </aside>
+    </div>
+
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      window.runnerControlMode = "menu";
+
+      function unityShowBanner(message, type) {
+        var warning = document.querySelector("#unity-warning");
+        var item = document.createElement("div");
+        item.textContent = message;
+        item.className = type === "error" ? "warning-error" : "warning-message";
+        warning.appendChild(item);
+
+        if (type !== "error") {
+          window.setTimeout(function () {
+            item.remove();
+          }, 5000);
+        }
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_WASM
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        showBanner: unityShowBanner,
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5)
+      };
+
+#if BACKGROUND_FILENAME
+      canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
+#endif
+
+      var loaderScript = document.createElement("script");
+      loaderScript.src = loaderUrl;
+      loaderScript.onload = function () {
+        createUnityInstance(canvas, config, function (progress) {
+          document.querySelector("#unity-progress").style.width = (progress * 100) + "%";
+        }).then(function (unityInstance) {
+          window.runnerUnityInstance = unityInstance;
+          document.querySelector("#unity-loading").classList.add("is-hidden");
+          canvas.focus();
+          window.dispatchEvent(new Event("runner-unity-ready"));
+        }).catch(function (message) {
+          unityShowBanner(message, "error");
+          document.querySelector("#tracking-status").textContent = "The Unity game could not start.";
+        });
+      };
+      document.body.appendChild(loaderScript);
+
+      var gameplayKeyCodes = [
+        "KeyW", "KeyA", "KeyS", "KeyD", "Space",
+        "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight",
+        "KeyC", "KeyR", "Enter", "NumpadEnter"
+      ];
+
+      function sendKeyboardToUnity(method, code) {
+        if (window.runnerUnityInstance) {
+          window.runnerUnityInstance.SendMessage("MediaPipeBridge", method, code || "");
+        }
+      }
+
+      document.addEventListener("keydown", function (event) {
+        var blockedKeys = ["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+        var target = event.target && event.target.tagName;
+        var isFormControl = target === "BUTTON" || target === "INPUT" || target === "TEXTAREA";
+        if (blockedKeys.indexOf(event.code) >= 0 && !isFormControl) {
+          event.preventDefault();
+        }
+
+        if (
+          window.runnerControlMode === "keyboard" &&
+          !isFormControl &&
+          gameplayKeyCodes.indexOf(event.code) >= 0 &&
+          !event.repeat
+        ) {
+          sendKeyboardToUnity("ReceiveBrowserKeyDown", event.code);
+        }
+      }, { passive: false });
+
+      document.addEventListener("keyup", function (event) {
+        if (window.runnerControlMode === "keyboard" && gameplayKeyCodes.indexOf(event.code) >= 0) {
+          sendKeyboardToUnity("ReceiveBrowserKeyUp", event.code);
+        }
+      });
+
+      function resetBrowserKeyboard() {
+        sendKeyboardToUnity("ResetBrowserKeyboard", "");
+      }
+
+      window.addEventListener("blur", resetBrowserKeyboard);
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) {
+          resetBrowserKeyboard();
+        }
+      });
+      canvas.addEventListener("pointerdown", function () { canvas.focus(); });
+    </script>
+    <script id="pose-bridge-script" type="module" src="TemplateData/pose-bridge.js"></script>
+    <script>
+      (function () {
+        function chooseKeyboardFallback() {
+          if (window.runnerPoseBridgeLoaded) {
+            return;
+          }
+
+          window.runnerControlMode = "keyboard";
+          document.querySelector("#control-mode-dialog").classList.add("is-hidden");
+          document.querySelector("#change-control-mode").textContent = "Controls: Keyboard";
+          document.querySelector("#tracking-status").textContent = "Keyboard mode active. Hold W to run.";
+          if (window.runnerUnityInstance) {
+            window.runnerUnityInstance.SendMessage("MediaPipeBridge", "SetControlMode", "keyboard");
+          }
+          canvas.focus();
+        }
+
+        function showPoseBridgeLoadError() {
+          if (window.runnerPoseBridgeLoaded) {
+            return;
+          }
+
+          var status = document.querySelector("#tracking-status");
+          var cameraButton = document.querySelector("#start-camera");
+          var cameraChoice = document.querySelector("#choose-camera");
+          var menuHelp = document.querySelector("#control-mode-help");
+          status.textContent = "The camera controller failed to load. Rebuild the Web game and refresh this page.";
+          status.classList.add("is-error");
+          cameraButton.disabled = true;
+          cameraChoice.disabled = true;
+          menuHelp.textContent = "Camera setup could not load. You can still play with the keyboard.";
+          menuHelp.classList.add("is-error");
+        }
+
+        document.querySelector("#choose-keyboard").addEventListener("click", chooseKeyboardFallback);
+        window.addEventListener("runner-unity-ready", function () {
+          if (!window.runnerPoseBridgeLoaded && window.runnerControlMode === "keyboard") {
+            window.runnerUnityInstance.SendMessage("MediaPipeBridge", "SetControlMode", "keyboard");
+          }
+        });
+        document.querySelector("#pose-bridge-script").addEventListener("error", showPoseBridgeLoadError);
+        window.setTimeout(showPoseBridgeLoadError, 2500);
+      })();
+    </script>
+  </body>
+</html>
